@@ -10,6 +10,7 @@ import 'utils/responsive_utils.dart';
 class ResponsiveBreakpoints extends StatefulWidget {
   final Widget child;
   final List<Breakpoint> breakpoints;
+  final Widget Function(BuildContext, Widget?)? $2ndbuilder;
 
   /// A list of breakpoints that are active when the device is in landscape orientation.
   ///
@@ -62,6 +63,7 @@ class ResponsiveBreakpoints extends StatefulWidget {
     this.landscapePlatforms,
     this.useShortestSide = false,
     this.debugLog = false,
+    this.$2ndbuilder,
   });
 
   @override
@@ -74,6 +76,7 @@ class ResponsiveBreakpoints extends StatefulWidget {
     List<ResponsiveTargetPlatform>? landscapePlatforms,
     bool useShortestSide = false,
     bool debugLog = false,
+    Widget Function(BuildContext, Widget?)? $2ndbuilder,
   }) {
     return ResponsiveBreakpoints(
       breakpoints: breakpoints,
@@ -81,20 +84,18 @@ class ResponsiveBreakpoints extends StatefulWidget {
       landscapePlatforms: landscapePlatforms,
       useShortestSide: useShortestSide,
       debugLog: debugLog,
+      $2ndbuilder: $2ndbuilder,
       child: child,
     );
   }
 
   static ResponsiveBreakpointsData of(BuildContext context) {
-    final InheritedResponsiveBreakpoints? data = context
-        .dependOnInheritedWidgetOfExactType<InheritedResponsiveBreakpoints>();
+    final InheritedResponsiveBreakpoints? data = context.dependOnInheritedWidgetOfExactType<InheritedResponsiveBreakpoints>();
     if (data != null) return data.data;
     throw FlutterError.fromParts(
       <DiagnosticsNode>[
-        ErrorSummary(
-            'ResponsiveBreakpoints.of() called with a context that does not contain ResponsiveBreakpoints.'),
-        ErrorDescription(
-            'No Responsive ancestor could be found starting from the context that was passed '
+        ErrorSummary('ResponsiveBreakpoints.of() called with a context that does not contain ResponsiveBreakpoints.'),
+        ErrorDescription('No Responsive ancestor could be found starting from the context that was passed '
             'to ResponsiveBreakpoints.of(). Place a ResponsiveBreakpoints at the root of the app '
             'or supply a ResponsiveBreakpoints.builder.'),
         context.describeElement('The context used was')
@@ -103,8 +104,7 @@ class ResponsiveBreakpoints extends StatefulWidget {
   }
 }
 
-class ResponsiveBreakpointsState extends State<ResponsiveBreakpoints>
-    with WidgetsBindingObserver {
+class ResponsiveBreakpointsState extends State<ResponsiveBreakpoints> with WidgetsBindingObserver {
   double windowWidth = 0;
   double getWindowWidth() {
     return MediaQuery.of(context).size.width;
@@ -121,9 +121,7 @@ class ResponsiveBreakpointsState extends State<ResponsiveBreakpoints>
   /// Get screen width calculation.
   double screenWidth = 0;
   double getScreenWidth() {
-    double widthCalc = useShortestSide
-        ? (windowWidth < windowHeight ? windowWidth : windowHeight)
-        : windowWidth;
+    double widthCalc = useShortestSide ? (windowWidth < windowHeight ? windowWidth : windowHeight) : windowWidth;
 
     return widthCalc;
   }
@@ -131,16 +129,12 @@ class ResponsiveBreakpointsState extends State<ResponsiveBreakpoints>
   /// Get screen height calculations.
   double screenHeight = 0;
   double getScreenHeight() {
-    double heightCalc = useShortestSide
-        ? (windowWidth < windowHeight ? windowHeight : windowWidth)
-        : windowHeight;
+    double heightCalc = useShortestSide ? (windowWidth < windowHeight ? windowHeight : windowWidth) : windowHeight;
 
     return heightCalc;
   }
 
-  Orientation get orientation => (windowWidth > windowHeight)
-      ? Orientation.landscape
-      : Orientation.portrait;
+  Orientation get orientation => (windowWidth > windowHeight) ? Orientation.landscape : Orientation.portrait;
 
   static const List<ResponsiveTargetPlatform> _landscapePlatforms = [
     ResponsiveTargetPlatform.iOS,
@@ -151,16 +145,12 @@ class ResponsiveBreakpointsState extends State<ResponsiveBreakpoints>
   ResponsiveTargetPlatform? platform;
 
   void setPlatform() {
-    platform = kIsWeb
-        ? ResponsiveTargetPlatform.web
-        : Theme.of(context).platform.responsiveTargetPlatform;
+    platform = kIsWeb ? ResponsiveTargetPlatform.web : Theme.of(context).platform.responsiveTargetPlatform;
   }
 
-  bool get isLandscapePlatform =>
-      (widget.landscapePlatforms ?? _landscapePlatforms).contains(platform);
+  bool get isLandscapePlatform => (widget.landscapePlatforms ?? _landscapePlatforms).contains(platform);
 
-  bool get isLandscape =>
-      orientation == Orientation.landscape && isLandscapePlatform;
+  bool get isLandscape => orientation == Orientation.landscape && isLandscapePlatform;
 
   bool get useShortestSide => widget.useShortestSide;
 
@@ -170,9 +160,7 @@ class ResponsiveBreakpointsState extends State<ResponsiveBreakpoints>
     windowHeight = getWindowHeight();
     screenWidth = getScreenWidth();
     screenHeight = getScreenHeight();
-    breakpoint = breakpoints.firstWhereOrNull((element) =>
-            screenWidth >= element.start && screenWidth <= element.end) ??
-        const Breakpoint(start: 0, end: 0);
+    breakpoint = breakpoints.firstWhereOrNull((element) => screenWidth >= element.start && screenWidth <= element.end) ?? const Breakpoint(start: 0, end: 0);
   }
 
   /// Get enabled breakpoints based on [orientation] and [platform].
@@ -187,9 +175,7 @@ class ResponsiveBreakpointsState extends State<ResponsiveBreakpoints>
   /// Set [breakpoints] and [breakpointSegments].
   void setBreakpoints() {
     // Optimization. Only update breakpoints if dimensions have changed.
-    if ((windowWidth != getWindowWidth()) ||
-        (windowHeight != getWindowHeight()) ||
-        (windowWidth == 0)) {
+    if ((windowWidth != getWindowWidth()) || (windowHeight != getWindowHeight()) || (windowWidth == 0)) {
       windowWidth = getWindowWidth();
       windowHeight = getWindowHeight();
       breakpoints.clear();
@@ -267,10 +253,16 @@ class ResponsiveBreakpointsState extends State<ResponsiveBreakpoints>
     // Platform initialization requires context.
     setPlatform();
 
-    return InheritedResponsiveBreakpoints(
-      data: ResponsiveBreakpointsData.fromWidgetState(this),
-      child: widget.child,
-    );
+    return Builder(builder: (context) {
+      if (widget.$2ndbuilder != null) {
+        widget.$2ndbuilder!.call(context, null);
+      }
+
+      return InheritedResponsiveBreakpoints(
+        data: ResponsiveBreakpointsData.fromWidgetState(this),
+        child: widget.child,
+      );
+    });
   }
 }
 
@@ -313,8 +305,7 @@ class ResponsiveBreakpointsData {
   });
 
   /// Creates data based on the [ResponsiveBreakpoints] state.
-  static ResponsiveBreakpointsData fromWidgetState(
-      ResponsiveBreakpointsState state) {
+  static ResponsiveBreakpointsData fromWidgetState(ResponsiveBreakpointsState state) {
     return ResponsiveBreakpointsData(
       screenWidth: state.screenWidth,
       screenHeight: state.screenHeight,
@@ -337,45 +328,25 @@ class ResponsiveBreakpointsData {
 
   /// Is the [screenWidth] larger than [name]?
   /// Defaults to false if the [name] cannot be found.
-  bool largerThan(String name) =>
-      screenWidth >
-      (breakpoints.firstWhereOrNull((element) => element.name == name)?.end ??
-          double.infinity);
+  bool largerThan(String name) => screenWidth > (breakpoints.firstWhereOrNull((element) => element.name == name)?.end ?? double.infinity);
 
   /// Is the [screenWidth] larger than or equal to [name]?
   /// Defaults to false if the [name] cannot be found.
-  bool largerOrEqualTo(String name) =>
-      screenWidth >=
-      (breakpoints.firstWhereOrNull((element) => element.name == name)?.start ??
-          double.infinity);
+  bool largerOrEqualTo(String name) => screenWidth >= (breakpoints.firstWhereOrNull((element) => element.name == name)?.start ?? double.infinity);
 
   /// Is the [screenWidth] smaller than the [name]?
   /// Defaults to false if the [name] cannot be found.
-  bool smallerThan(String name) =>
-      screenWidth <
-      (breakpoints.firstWhereOrNull((element) => element.name == name)?.start ??
-          0);
+  bool smallerThan(String name) => screenWidth < (breakpoints.firstWhereOrNull((element) => element.name == name)?.start ?? 0);
 
   /// Is the [screenWidth] smaller than or equal to the [name]?
   /// Defaults to false if the [name] cannot be found.
-  bool smallerOrEqualTo(String name) =>
-      screenWidth <=
-      (breakpoints.firstWhereOrNull((element) => element.name == name)?.end ??
-          0);
+  bool smallerOrEqualTo(String name) => screenWidth <= (breakpoints.firstWhereOrNull((element) => element.name == name)?.end ?? 0);
 
   /// Is the [screenWidth] smaller than or equal to the [name]?
   /// Defaults to false if the [name] cannot be found.
   bool between(String name, String name1) {
-    return (screenWidth >=
-            (breakpoints
-                    .firstWhereOrNull((element) => element.name == name)
-                    ?.start ??
-                0) &&
-        screenWidth <=
-            (breakpoints
-                    .firstWhereOrNull((element) => element.name == name1)
-                    ?.end ??
-                0));
+    return (screenWidth >= (breakpoints.firstWhereOrNull((element) => element.name == name)?.start ?? 0) &&
+        screenWidth <= (breakpoints.firstWhereOrNull((element) => element.name == name1)?.end ?? 0));
   }
 
   @override
@@ -388,8 +359,7 @@ class ResponsiveBreakpointsData {
           breakpoint == other.breakpoint;
 
   @override
-  int get hashCode =>
-      screenWidth.hashCode * screenHeight.hashCode * breakpoint.hashCode;
+  int get hashCode => screenWidth.hashCode * screenHeight.hashCode * breakpoint.hashCode;
 }
 
 /// Creates an immutable widget that exposes [ResponsiveBreakpointsData]
@@ -411,10 +381,8 @@ class InheritedResponsiveBreakpoints extends InheritedWidget {
   /// Creates a widget that provides [ResponsiveBreakpointsData] to its descendants.
   ///
   /// The [data] and [child] arguments must not be null.
-  const InheritedResponsiveBreakpoints(
-      {super.key, required this.data, required super.child});
+  const InheritedResponsiveBreakpoints({super.key, required this.data, required super.child});
 
   @override
-  bool updateShouldNotify(InheritedResponsiveBreakpoints oldWidget) =>
-      data != oldWidget.data;
+  bool updateShouldNotify(InheritedResponsiveBreakpoints oldWidget) => data != oldWidget.data;
 }
