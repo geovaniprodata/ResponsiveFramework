@@ -255,13 +255,18 @@ class ResponsiveBreakpointsState extends State<ResponsiveBreakpoints> with Widge
 
     return Builder(builder: (context) {
       if (widget.$2ndbuilder != null) {
-        widget.$2ndbuilder!.call(context, null);
+        return widget.$2ndbuilder!.call(
+            context,
+            InheritedResponsiveBreakpoints(
+              data: ResponsiveBreakpointsData.fromWidgetState(this),
+              child: widget.child,
+            ));
+      } else {
+        return InheritedResponsiveBreakpoints(
+          data: ResponsiveBreakpointsData.fromWidgetState(this),
+          child: widget.child,
+        );
       }
-
-      return InheritedResponsiveBreakpoints(
-        data: ResponsiveBreakpointsData.fromWidgetState(this),
-        child: widget.child,
-      );
     });
   }
 }
